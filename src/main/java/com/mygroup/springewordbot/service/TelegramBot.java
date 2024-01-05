@@ -2,15 +2,13 @@ package com.mygroup.springewordbot.service;
 
 import com.mygroup.springewordbot.config.BotConfig;
 import com.vdurmont.emoji.EmojiParser;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
-import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScope;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -27,6 +25,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     static final String YES = "YES";
     static final String NO = "NO";
 
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private WordService wordService;
+
     public TelegramBot(BotConfig botConfig) {
 
         this.botConfig = botConfig;
@@ -34,7 +37,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         botCommandList.add(new BotCommand("/start", "Запуск бота"));
         botCommandList.add(new BotCommand("/help", "info"));
         botCommandList.add(new BotCommand("/ol", "Как делЫ?"));
-        botCommandList.add(new BotCommand("/ok", "ок"));
+        botCommandList.add(new BotCommand("/license", "Ваша ліцензія"));
+        botCommandList.add(new BotCommand("/id", "Дізнатись іd свій"));
         botCommandList.add(new BotCommand("/test", "test \uD83C\uDDFA\uD83C\uDDE6"));
 
         try {
@@ -61,33 +65,56 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         if (update.hasMessage() && update.getMessage().hasText()) {
 
+
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
             String chatName = update.getMessage().getChat().getFirstName();
 
+
             switch (messageText) {
-                case "/start" -> startCommandReceived(chatId, chatName);
-                case "/help" -> sendMessage(chatId, "info \n'\n /test - Команда для теста функціонала ");
-                case "/test" -> {
-                    sendMessage(chatId, "Тест Тестович " +
-                            EmojiParser.parseToUnicode(":gb:") + " - " + EmojiParser.parseToUnicode("\uD83C\uDDFA\uD83C\uDDE6")
-                    );
-                    addButtonAndSendMassage("1213", chatId);
+                case "/start","/start@SpringEWordBot" -> {
+                    sendMessage("-1002086308373","124124 @parubak 1331");
+//                    startCommandReceived("-1002086308373", chatName );
                 }
-                case "/ok" -> sendMessage(chatId, "Все гуд!!!");
+                case "/help" ,"/help@SpringEWordBot"-> sendMessage(chatId, "info \n\n /test - Команда для теста функціонала ");
+                case "/test","/test@SpringEWordBot" -> {
+                    String еьщджи=EmojiParser.parseToUnicode(":gb:") + " - " + EmojiParser.parseToUnicode("\uD83C\uDDFA\uD83C\uDDE6");
+                    sendMessage(chatId, "Тест Тестович " +еьщджи +"\n\n"+
+                            "/licenseTest - Ліцензія на 10 днів\n"+
+                            "/licenseTest2 - Ліцензія закінчилась\n"+
+                            "/word - Приклад слова з перекладом та прикладом"
+
+                    );
+                    addButtonAndSendMassage("Кавяівяаа", chatId);
+                }
+                case "/id","/id@SpringEWordBot" -> sendMessage(chatId, "Ваш id в telegram:\n\n"+update.getMessage().getChat().getId());
+                case "/ok" ,"/ok@SpringEWordBot"-> sendMessage(chatId, "Все гуд!!!");
+                case "/license","/license@SpringEWordBot" ->
+                    sendMessage(chatId, userService.licenseOf(update.getMessage().getChat().getId()));
+                case "/licenseTest","/licenseTest@SpringEWordBot" ->
+                    sendMessage(chatId, userService.licenseOf(1L));
+                case "/licenseTest2","/licenseTest2@SpringEWordBot" ->
+                    sendMessage(chatId, userService.licenseOf(3L));
+                case "/word","/word@SpringEWordBot" -> sendMessage(chatId,wordService.showWord());
+                case "/in@SpringEWordBot" -> { long user=update.getMessage().getFrom().getId();
+
+                    sendMessage(user,"dscs"+user);
+
+
+                }
                 default -> sendMessage(chatId, "Нет такой команди(");
             }
         } else if (update.hasCallbackQuery()) {
 
             String callbackData = update.getCallbackQuery().getData();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
-            if (callbackData.equals(YES)) {
-                addButtonAndSendMassage("Daaa!", chatId);
-
-            }else if (callbackData.equals(NO)){
-                addButtonAndSendMassage("Пізда малята!", chatId);
-
+            switch (callbackData) {
+                case YES -> addButtonAndSendMassage("Daaa!", chatId);
+                case NO -> addButtonAndSendMassage("Пізда малята!", chatId);
+                case "license30" -> addButtonAndSendMassage("Є місяць!", chatId);
+                case "wordNext" -> sendMessage(chatId,wordService.showWord());
             }
+            ;
 
         }
     }
@@ -122,6 +149,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void startCommandReceived(long chatId, String chatName) {
 
         String answer = "Дароу " + chatName + "!";
+
         sendMessage(chatId, answer);
 //    log.info("Okkkkkkkk");
     }
@@ -131,6 +159,25 @@ public class TelegramBot extends TelegramLongPollingBot {
         message.setChatId(String.valueOf(chatId));
         message.setText(textMessage);
 
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+//            log.error(e.getMessage());
+        }
+    }
+    private void sendMessage(String chatId, String textMessage) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText(textMessage);
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+//            log.error(e.getMessage());
+        }
+    }
+    private void sendMessage(long chatId, SendMessage message) {
+        message.setChatId(String.valueOf(chatId));
         try {
             execute(message);
         } catch (TelegramApiException e) {
