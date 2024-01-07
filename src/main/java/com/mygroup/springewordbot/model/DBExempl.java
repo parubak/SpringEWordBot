@@ -24,22 +24,22 @@ public class DBExempl {
  public void init(){
 
   LocalDate licenseEnd=LocalDate.now().plusDays(10);
-  users.add(new User(1,licenseEnd));
-  users.add(new User(137588343L,licenseEnd));
+  users.add(new User(1,"dfsdf",licenseEnd));
+  users.add(new User(137588343L,"sadas",licenseEnd));
 
-  words.add(new Word("Adventure","ədˈvɛn.tʃər","Пригода",
+  words.add(new Word(1l,"Adventure","ədˈvɛn.tʃər","Пригода",
           "Going on a solo hiking trip was a thrilling adventure for Sarah.",
           "Подорож у гори в одиночестві була захопливою пригодою для Сари."));
-  words.add(new Word("Efficient","ɪˈfɪʃ.ənt","Ефективний",
+  words.add(new Word(2l,"Efficient","ɪˈfɪʃ.ənt","Ефективний",
           "Using a programmable thermostat is an efficient way to manage energy consumption at home.",
           "Використання програмованого термостата - це ефективний спосіб керування споживанням енергії вдома."));
-  words.add(new Word("Illuminate","ɪˈluː.mɪ.neɪt","Підсвічувати",
+  words.add(new Word(3l,"Illuminate","ɪˈluː.mɪ.neɪt","Підсвічувати",
           "The streetlights helped illuminate the path during the dark night.",
           "Ліхтарі допомогли підсвітити стежку під час темної ночі."));
-  words.add(new Word("Resilient","rɪˈzɪl.jənt","Стійкий, витривалий",
+  words.add(new Word(4l,"Resilient","rɪˈzɪl.jənt","Стійкий, витривалий",
           "Despite facing many challenges, the community showed a resilient spirit and quickly recovered.",
           "Незважаючи на багато труднощів, спільнота проявила стійкий дух і швидко відновилася."));
-  words.add(new Word("Versatile","ˈvɜː.sə.taɪl","Універсальний",
+  words.add(new Word(5l,"Versatile","ˈvɜː.sə.taɪl","Універсальний",
           "A Swiss Army knife is a versatile tool that can be used for various purposes, such as cutting and opening bottles.",
           "Швейцарський армійський ніж - це універсальний інструмент, який можна використовувати для різних цілей, таких як різання і відкривання пляшок."));
 
