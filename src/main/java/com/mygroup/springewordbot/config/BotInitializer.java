@@ -1,8 +1,6 @@
 package com.mygroup.springewordbot.config;
 
-import com.mygroup.springewordbot.service.TelegramBot;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.mygroup.springewordbot.controller.TelegramBotController;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -13,8 +11,12 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 //@Slf4j
 @Component
 public class BotInitializer {
-    @Autowired
-    TelegramBot bot;
+    final
+    TelegramBotController bot;
+
+    public BotInitializer(TelegramBotController bot) {
+        this.bot = bot;
+    }
 
     @EventListener({ContextRefreshedEvent.class})
     public void init() throws TelegramApiException {

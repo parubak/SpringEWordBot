@@ -1,33 +1,47 @@
 package com.mygroup.springewordbot.service;
 
-import com.mygroup.springewordbot.model.DBExempl;
+import com.mygroup.springewordbot.db.model.User;
+import com.mygroup.springewordbot.db.repo.UserRepository;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Service
 @Data
 public class UserService {
-    @Autowired
-    private DBExempl dbExempl;
+    private final UserRepository userRepository;
+    private final WordService wordService;
+    private final CardService cardService;
+
+
+    public UserService(UserRepository userRepository, WordService wordService, CardService cardService) {
+        this.userRepository = userRepository;
+        this.wordService = wordService;
+        this.cardService = cardService;
+    }
 
     public SendMessage licenseOf(Long id) {
-        SendMessage message = new SendMessage();
-        for (var u : dbExempl.getUsers()) {
-            if (id.equals(u.getId())) {
-                message.setText("Діє до: " + u.getLicenseEnd().toString());
-                return message;
-            }
+
+        SendMessage message=new SendMessage();
+        LocalDate licenseEnd= userRepository.findById(id).get().getLicenseEnd();
+
+
+        LocalDate now=LocalDate.now();
+
+        if (!now.isAfter(licenseEnd)){
+            message.setText("Ваша ліцензія діє до: " + licenseEnd.toString());
+            return message;
+
         }
-        String messageText = "❌💸 Твій акаунт неактивний.\n" +
-                "Передплати користування:";
-        message.setText(messageText);
+        message.setText("❌💸 Твій акаунт неактивний.\n" + "Передплати користування:");
 
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
 
@@ -57,6 +71,58 @@ public class UserService {
         }};
         keyboardMarkup.setKeyboard(rowsListButton);
         message.setReplyMarkup(keyboardMarkup);
+        return message;
+    }
+
+    public boolean saveUser(Chat chat) {
+        if (!userRepository.existsById(chat.getId())){
+
+            User user=new User();
+            user.setId(chat.getId());
+            user.setUserName(chat.getUserName());
+            user.setLicenseEnd(LocalDate.now().plusDays(7));
+            user.setSending(true);
+
+
+            userRepository.save(user);
+            return true;
+        }
+
+        return false;
+
+    }
+
+    public Collection<User> findAllBySendingTrue(){
+        return userRepository.getAllBySendingTrue();
+    }
+
+    public void setViewById(Long userId, Long wordId) {
+
+      User user= userRepository.findById(userId).get();
+      user.setViewWord(wordId);
+      userRepository.save(user);
+
+
+    }
+
+    public User findById(long chatId) {
+        return userRepository.findById(chatId).get();
+    }
+
+    public SendMessage sendingOnOff(long chatId) {
+        SendMessage message=new SendMessage();
+        User user=userRepository.findById(chatId).get();
+        if (user.isSending()){
+            user.setSending(Boolean.FALSE);
+            message.setText("Сповіщення вимкненно. \n\n" +
+                    "Щоб увімкнути, повторіть команду /sending");
+
+        }else {
+            user.setSending(Boolean.TRUE);
+            message.setText("Сповіщення увімкненно! \n\n" +
+                    "Щоб вимкнути, повторіть команду /sending");
+        }
+        userRepository.save(user);
         return message;
     }
 }
