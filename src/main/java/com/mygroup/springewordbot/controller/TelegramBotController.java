@@ -80,7 +80,7 @@ public class TelegramBotController extends TelegramLongPollingBot {
             switch (messageText) {
                 case "/start" -> {
 //                    Заповнити таблицю зі словами
-//                    wordService.init();
+                //    wordService.init();
 
                     sendMessage = commandService.startCommandReceived(update.getMessage().getChat());
                     sendMessage(chatId, sendMessage);
